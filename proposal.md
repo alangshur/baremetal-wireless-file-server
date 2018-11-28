@@ -1,6 +1,6 @@
 ### Project Proposal
 
-* Project title: **Smart Wireless File Server**
+* Project title: **Smart Wireless File Server (Personal Cloud Storage Machine)**
 * Team members: **Alex Langshur (Responsibilities: Everything)**
 * Description: **This project will be a baremetal file server system. The system will be built arround two Raspberry Pi's -- one connected through UART to the computer (client) and one powered remotely (server). Both will be setup with radio transmitters and receievers that communicate using a custom transmission protocol (handshake, data packeting, error checking) over the 433MHz UHF band. The system will use customized compression and encryption schemes, as well as a smart server utility built around a 64GB SD card for storing and retrieving files.**
 * Hardware required *(everything has been ordered)*:
