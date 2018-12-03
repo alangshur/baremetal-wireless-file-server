@@ -1,6 +1,6 @@
 import sys
- 
-# read the file and load it into a string
+
+# open filepath
 filepath = sys.argv[1]
 file = open(filepath, 'r')
 str = file.read()
