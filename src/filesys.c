@@ -75,3 +75,18 @@ char* file_read(char* file_name) {
 
     return read_buf;
 }
+
+char* file_remove(char* file_name) {
+
+    // check if file exists
+    if (!strcmp(file_check_status(file_name), "Error: file not found.")) 
+        return "Error: file not found.";
+
+    // remove file from system
+    FRESULT res = delete_file(get_map_val(file_name));
+    if (res != FR_OK) return "Error: failed to remove file.";
+
+    // remove file from map
+    map_remove(&file_name_map, file_name);
+    return "Sucess: file removed.";
+}
