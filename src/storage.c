@@ -2,11 +2,27 @@
 #include "ff.h"
 #include "strings.h"
 #include "malloc.h"
+#include "printf.h"
 #include "timer.h"
 #include "pi.h"
 
 // define static variables
 static storage_system_t sys;
+
+// concatenate pair of strings
+static char* str_concat(char* s1, const char* s2) {
+    char* str = malloc(strlen(s1) + strlen(s2) + 1);
+    char* str_ptr = str;
+
+    // copy s2 to end of s1
+    memcpy(str, s1, strlen(s1));
+    str_ptr += strlen(s1);
+    memcpy(str_ptr, s2, strlen(s2));
+    str_ptr += strlen(s2);
+    *str_ptr = 0;
+
+    return str;
+}
 
 // run volume mount success signal
 static void signal_volume_mount(void) {
@@ -40,27 +56,64 @@ static FRESULT remount_volume(void) {
 }
 
 void storage_init(void) {
-    sys.files_allocated = 0;
+    DIR dp;
+    FILINFO fno;
 
     // execute initial volume mount
+    f_mount(NULL, "", 1);
     if (remount_volume() == FR_OK) signal_volume_mount();
     else fail_reboot();
+
+    // perform first time setup
+    if (f_chdir("0:/sys") != FR_OK) {
+        f_mkdir("sys");
+    }
+    
+    // open dir
+    f_chdir("0:/sys");
+    f_opendir(&dp, "0:/sys");
+
+    // remove all allocated files
+    for (int i = 0; i < 5; i++) {
+        f_readdir(&dp, &fno);
+        if (!strcmp(fno.fname, "")) break;
+        delete_file(fno.fname);
+    }
+
+    sys.files_allocated = 0;
+    f_closedir(&dp);
 }
 
-FILINFO get_file_info(char* file_name) {
+void print_sys_dir_content(void) {
     remount_volume();
+    DIR dp;
     FILINFO fno;
-    f_stat(file_name, &fno);
-    return fno;
+
+    // open dir
+    f_chdir("0:/sys");
+    f_opendir(&dp, "0:/sys");
+
+    // print all allocated files
+    for (int i = 0; i < sys.files_allocated + 2; i++) {
+        f_readdir(&dp, &fno);
+        printf("File: %s\n", fno.fname);
+    }
+
+    f_closedir(&dp);
 }
 
 FRESULT write_file(char* file_name, char* buf, const unsigned int WRITE_FLAGS) {
     remount_volume();
-    FIL fp;
     FRESULT res;
+    FIL fp;
+    DIR dp;
+
+    // open dir
+    f_chdir("0:/sys");
+    f_opendir(&dp, "0:/sys");
     
     // open file for write
-    res = f_open(&fp, file_name, WRITE_FLAGS);
+    res = f_open(&fp, str_concat("0:/sys/", file_name), WRITE_FLAGS);
     if (res != FR_OK) return res;
 
     // write from buf
@@ -77,31 +130,39 @@ FRESULT write_file(char* file_name, char* buf, const unsigned int WRITE_FLAGS) {
         sys.files_allocated++;
 
     f_close(&fp);
+    f_closedir(&dp);
     return FR_OK;
 }
 
 char* read_file(char* file_name, const unsigned int READ_FLAGS) {
+    remount_volume();
     FIL fp;
     FRESULT res;
+    DIR dp;
 
     // get file info
-    FILINFO file_info = get_file_info(file_name);
-    remount_volume();
+    FILINFO fno;
+    f_stat(str_concat("0:/sys/", file_name), &fno);
+
+    // open dir
+    f_chdir("0:/sys");
+    f_opendir(&dp, "0:/sys");
 
     // open file for write
-    res = f_open(&fp, file_name, READ_FLAGS);
+    res = f_open(&fp, str_concat("0:/sys/", file_name), READ_FLAGS);
     if (res != FR_OK) return NULL;
 
     // read to buf
     unsigned int bytes_read;
-    char* buf = malloc(file_info.fsize + 1);
-    res = f_read(&fp, buf, file_info.fsize, &bytes_read);
+    char* buf = malloc(fno.fsize + 1);
+    res = f_read(&fp, buf, fno.fsize, &bytes_read);
     if (res != FR_OK) {
         f_close(&fp);
         return NULL;
     }
 
     f_close(&fp);
+    f_closedir(&dp);
     return buf;
 }
 
@@ -109,8 +170,8 @@ FRESULT delete_file(char* file_name) {
     remount_volume();
     FRESULT res;
 
-    // unlink file
-    res = f_unlink(file_name);
+    // unlink
+    res = f_unlink(str_concat("0:/sys/", file_name));
     if (res == FR_OK) sys.files_allocated--;
     return res;
 }

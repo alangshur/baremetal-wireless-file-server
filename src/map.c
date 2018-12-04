@@ -213,3 +213,13 @@ bool map_contains_(map_base_t* m, const char* key) {
 
     return false;
 }
+
+unsigned int map_size_(map_base_t* m) {
+    const char* iter_key;
+    map_iter_t iter = map_iter_();
+    unsigned int counter = 0;
+
+    // iterate through map elements
+    while((iter_key = map_next_(m, &iter))) counter++;
+    return counter;
+}

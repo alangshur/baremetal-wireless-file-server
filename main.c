@@ -1,11 +1,16 @@
 #include "printf.h"
-#include "storage.h"
+#include "filesys.h"
 #include "timer.h"
+#include "storage.h"
+#include "malloc.h"
 
 void main() {
-    storage_init();
-    write_file("testfile", "Alex Langshur", FA_CREATE_NEW | FA_WRITE);
-    char* result = read_file("testfile", FA_READ);
-    printf("Result: %s\n", result);
-    delete_file("testfile");
+    filesys_init();
+    file_create("cs107e", "01010100101");
+    char* read = file_read("cs107e");
+    printf("Read: %s\n", read);
+
+    file_create("cs107b", "101010101010111010100101010011");
+    read = file_read("cs107b");
+    printf("Read: %s", read);
 }

@@ -6,25 +6,25 @@
 // init file system
 void filesys_init(void);
 
-// generate valid file name
-char* file_generate_valid_name(void);
-
 // check if file exists
-bool file_check_status(void);
+char* file_check_status(char* file_name);
 
 // create and write to file
-bool file_create_write(void);
+char* file_create(char* file_name, char* file_buf);
 
 // append to file
-bool file_append(void);
+char* file_append(char* file_name, char* file_buf);
+
+// replace file contents
+char* file_content_replace(char* file_name, char* file_buf);
 
 // replace file
-bool file_replace(void);
+char* file_replace(char* old_file_name, char* new_file_name, char* file_buf);
 
 // read file
-bool file_read(void);
+char* file_read(char* file_name);
 
 // remove file
-bool file_remove(void);
+char* file_remove(char* file_name);
 
 #endif

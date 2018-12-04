@@ -13,8 +13,8 @@ typedef struct {
 // init storage
 void storage_init(void);
 
-// get info of file
-FILINFO get_file_info(char* file_name);
+// print contents of sys directory
+void print_sys_dir_content(void);
 
 // write to file
 FRESULT write_file(char* file_name, char* write_buf, const unsigned int WRITE_FLAGS);
