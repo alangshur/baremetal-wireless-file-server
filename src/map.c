@@ -1,6 +1,7 @@
 #include "map.h"
 #include "strings.h"
 #include "malloc.h"
+#include "printf.h"
 #include <stdbool.h>
 
 // define struct
@@ -222,4 +223,13 @@ unsigned int map_size_(map_base_t* m) {
     // iterate through map elements
     while((iter_key = map_next_(m, &iter))) counter++;
     return counter;
+}
+
+void map_print_(map_base_t* m) {
+    const char* iter_key;
+    map_iter_t iter = map_iter_();
+
+    // iterate through map elements
+    while((iter_key = map_next_(m, &iter))) 
+        printf("%s -> %s\n", iter_key, (char*) *((int*) map_get_(m, iter_key)));
 }

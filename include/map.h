@@ -49,6 +49,9 @@ typedef map_t(char*) map_str_t;
 // get map size
 #define map_size(m) map_size_(&(m)->base)
 
+// print map contents
+#define map_print(m) map_print_(&(m)->base)
+
 // define map function prototypes
 void map_deinit_(map_base_t* m);
 void* map_get_(map_base_t* m, const char* key);
@@ -58,5 +61,6 @@ map_iter_t map_iter_(void);
 const char *map_next_(map_base_t *m, map_iter_t *iter);
 bool map_contains_(map_base_t* m, const char* key);
 unsigned int map_size_(map_base_t* m);
+void map_print_(map_base_t* m);
 
 #endif

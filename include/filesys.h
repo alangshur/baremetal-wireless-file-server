@@ -9,22 +9,22 @@ void filesys_init(void);
 // check if file exists
 char* file_check_status(char* file_name);
 
+// get file size
+unsigned int file_get_size(char* file_name);
+
 // create and write to file
 char* file_create(char* file_name, char* file_buf);
 
-// append to file
-char* file_append(char* file_name, char* file_buf);
-
-// replace file contents
-char* file_content_replace(char* file_name, char* file_buf);
-
-// replace file
-char* file_replace(char* old_file_name, char* new_file_name, char* file_buf);
-
-// read file
+// read file with corrected length
 char* file_read(char* file_name);
 
+// read file
+char* file_read_uncorrected(char* file_name);
+
+// replace file contents
+char* file_update(char* file_name, char* file_buf);
+
 // remove file
-char* file_remove(char* file_name);
+char* file_delete(char* file_name);
 
 #endif

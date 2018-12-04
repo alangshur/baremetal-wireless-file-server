@@ -6,7 +6,6 @@
 #include "rand.h"
 #include "malloc.h"
 #include "ff.h"
-#include "printf.h"
 #include <stdbool.h>
 
 // define macros
@@ -30,6 +29,21 @@ static char* file_generate_valid_name(void) {
     return file_name;
 }
 
+// concatenate pair of strings
+static char* str_concat(char* s1, const char* s2) {
+    char* str = malloc(strlen(s1) + strlen(s2) + 1);
+    char* str_ptr = str;
+
+    // copy s2 to end of s1
+    memcpy(str, s1, strlen(s1));
+    str_ptr += strlen(s1);
+    memcpy(str_ptr, s2, strlen(s2));
+    str_ptr += strlen(s2);
+    *str_ptr = 0;
+
+    return str;
+}
+
 void filesys_init(void) {
     storage_init();
     map_init(&file_name_map);
@@ -39,6 +53,16 @@ char* file_check_status(char* file_name) {
     bool map_status = map_contains(&file_name_map, file_name);
     if (map_status) return "Success: file found.";
     else return "Error: file not found.";
+}
+
+unsigned int file_get_size(char* file_name) {
+
+    // get file info
+    FILINFO fno;
+    FRESULT res = f_stat(str_concat("0:/sys/", get_map_val(file_name)), &fno);
+    if (res != FR_OK) return 0;
+
+    return fno.fsize;
 }
 
 char* file_create(char* file_name, char* file_buf) {
@@ -63,7 +87,7 @@ char* file_create(char* file_name, char* file_buf) {
     return "Success: file created.";
 }
 
-char* file_read(char* file_name) {
+char* file_read_(char* file_name) {
     
     // check if file exists
     if (!strcmp(file_check_status(file_name), "Error: file not found.")) 
@@ -76,7 +100,32 @@ char* file_read(char* file_name) {
     return read_buf;
 }
 
-char* file_remove(char* file_name) {
+char* file_read(char* file_name) {
+    char* read_buf = file_read_(file_name);
+    if (!strcmp(read_buf, "Error: file not found."))
+        return "Error: file not found.";
+    else if (!strcmp(read_buf, "Error: failed to read file."))
+        return "Error: failed to read file.";
+
+    // enforce file size
+    read_buf[file_get_size(file_name)] = 0;
+    return read_buf;
+}
+
+char* file_update(char* file_name, char* file_buf) {
+
+    // check if file exists
+    if (!strcmp(file_check_status(file_name), "Error: file not found.")) 
+        return "Error: file not found.";
+
+    // overrite file
+    FRESULT res = write_file(get_map_val(file_name), file_buf, FA_CREATE_ALWAYS | FA_WRITE);
+    if (res != FR_OK) return "Error: failed to update file.";
+
+    return "Success: file edited.";
+}
+
+char* file_delete(char* file_name) {
 
     // check if file exists
     if (!strcmp(file_check_status(file_name), "Error: file not found.")) 
@@ -88,5 +137,5 @@ char* file_remove(char* file_name) {
 
     // remove file from map
     map_remove(&file_name_map, file_name);
-    return "Sucess: file removed.";
+    return "Success: file removed.";
 }
