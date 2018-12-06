@@ -1,6 +1,6 @@
-NAME = main
+CLIENT = client
 SERVER = server
-MODULES = src/radio.o src/storage.o src/filesys.o src/map.o
+MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o
 
 CFLAGS = -I./include -g -Wall -Wpointer-arith
 CFLAGS += -Og -std=c99 -ffreestanding
@@ -8,7 +8,7 @@ CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name
 LDFLAGS = -nostdlib -T memmap -L. -L./src -L./lib
 LDLIBS  = -lpisd -lpiextra -lpi -lgcc
 
-all: $(NAME).bin $(MODULES)
+all: $(CLIENT).bin $(MODULES)
 
 %.bin: %.elf
 	arm-none-eabi-objcopy $< -O binary $@
@@ -25,7 +25,7 @@ all: $(NAME).bin $(MODULES)
 %.list: %.o
 	arm-none-eabi-objdump --no-show-raw-insn -d $< > $@
 
-install: $(NAME).bin
+install: $(CLIENT).bin
 	./util/rpi-install.py -p $<
 
 server: $(SERVER).bin

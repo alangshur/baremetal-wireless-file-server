@@ -1,5 +1,10 @@
-*.o
-*.bin
-*.elf
+cstart.o
+start.o
+client.o
+client.bin
+client.elf
+server.o
+server.bin
+server.elf
 src/*.o
 .vscode/**
