@@ -3,7 +3,7 @@ SERVER = server
 MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o
 
 CFLAGS = -I./include -g -Wall -Wpointer-arith
-CFLAGS += -Og -std=c99 -ffreestanding
+CFLAGS += -O1 -std=c99 -ffreestanding
 CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name
 LDFLAGS = -nostdlib -T memmap -L. -L./src -L./lib
 LDLIBS  = -lpisd -lpiextra -lpi -lgcc
