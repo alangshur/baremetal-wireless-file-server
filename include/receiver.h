@@ -15,11 +15,14 @@ char receiver_get_char(void);
 // get a single short from receiver
 short receiver_get_short(void);
 
-// get transmission packet
-void receiver_get_packet(packet_t* packet);
+// get a single packet from receiver
+void receiver_get_packet_buf(char* buf);
 
-// get transmission block
-char* receiver_get_block_buf(void);
+// build the 32-bit packet
+char* receiver_build_packet(char* buf);
+
+// calculate packet checksum
+unsigned int receiver_calculate_checksum(char* buf);
 
 // put receiver in sleep mode
 void receiver_sleep_mode(void);

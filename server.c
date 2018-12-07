@@ -5,41 +5,27 @@
 #include "malloc.h"
 #include "timer.h"
 
-#define PAYLOAD_SIZE_BYTES 8
+#define PACKET_SIZE_BYTES 32
+#define PACKET_CONTENT_BYTES 16
 
 void main() {
     transmitter_init(2400);
     receiver_init(2400);
-    
-    packet_t packet_arr[PAYLOAD_SIZE_BYTES];
-    packet_t* packet_ptr = packet_arr;
-    char* message = "Lorem ipsum dolor sit amet, consectetur adipiscing volutpat.";
-    unsigned int message_length = strlen(message);
-    char* buf = malloc(message_length);
-    memcpy(buf, message, message_length);
-    transmitter_format_transmission(buf, message_length, packet_ptr);
+
+    // this string has to be <= 16 bytes
+    char* packet = "Hello, world!";
+
+    // prepare packet buf
+    char* buf = malloc(2 * PACKET_SIZE_BYTES);
+    memcpy(buf, packet, strlen(packet));
+    memset((char*) (buf + strlen(packet)), '~', PACKET_SIZE_BYTES);
+
+    // wake up receiver
     transmitter_exit_sleep_mode();
     transmitter_start();
-    transmitter_send_packet(&packet_arr[0]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[1]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[2]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[3]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[4]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[5]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[6]);
-    transmitter_send_char(0b11111111);
-    transmitter_send_char(0b11111111);
-    transmitter_send_packet(&packet_arr[7]);
+
+    // transmit packet
+    for (int i = 0; i < PACKET_SIZE_BYTES; i++) {
+        transmitter_send_char(buf[i]); 
+    }
 }
