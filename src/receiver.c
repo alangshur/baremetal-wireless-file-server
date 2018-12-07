@@ -6,13 +6,18 @@
 #include "gpioextra.h"
 
 // define macro constants
-#define BIT_DELAY_US 416
 #define WAKE_UP_SIGNAL 0xAAAAAAAA
 #define START_SIGNAL 0b11111111
 
-void receiver_init(void) {
+// define static variables
+static unsigned int bit_delay_us;
+
+void receiver_init(unsigned int baud_rate) {
     gpio_init();
     gpio_set_input(GPIO_PIN23);
+
+    // set delay for specified baud rate
+    bit_delay_us = 1000000 / baud_rate;
 }
 
 int receiver_get_bit(void) {
@@ -20,7 +25,7 @@ int receiver_get_bit(void) {
     int result = gpio_read(GPIO_PIN23);
 
     // wait for bit delay time
-    while ((timer_get_ticks() - start) < BIT_DELAY_US);
+    while ((timer_get_ticks() - start) < bit_delay_us);
     return result;
 }
 
@@ -32,21 +37,7 @@ char receiver_get_char() {
     while (count--) {
         int start = timer_get_ticks();
         result ^= (gpio_read(GPIO_PIN23) << count);
-        while ((timer_get_ticks() - start) < BIT_DELAY_US);
-    }
-
-    return result;
-}
-
-unsigned int receiver_get_int() {
-    char count = 32;
-    char result = 0;
-
-    // write every set bit to result
-    while (count--) {
-        int start = timer_get_ticks();
-        result ^= (gpio_read(GPIO_PIN23) << count);
-        while ((timer_get_ticks() - start) < BIT_DELAY_US);
+        while ((timer_get_ticks() - start) < bit_delay_us);
     }
 
     return result;
@@ -68,7 +59,7 @@ void receiver_sleep_mode(void) {
         if (res == WAKE_UP_SIGNAL) return;
         
         // wait until bit delay time
-        while((timer_get_ticks() - start) < BIT_DELAY_US);
+        while((timer_get_ticks() - start) < bit_delay_us);
     }
 }
 

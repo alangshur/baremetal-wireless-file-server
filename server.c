@@ -1,9 +1,11 @@
 #include "transmitter.h"
+#include "receiver.h"
 #include "gpio.h"
 #include "timer.h"
 
 void main() {
-    transmitter_init();
+    transmitter_init(2400);
+    receiver_init(2400);
     char message = 'A';
     
     // do nothing for 5 seconds
