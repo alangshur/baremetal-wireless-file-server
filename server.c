@@ -13,7 +13,7 @@ void main() {
     receiver_init(2400);
 
     // this string has to be <= 16 bytes
-    char* packet = "Hello, world!";
+    char* packet = "Alex Langshur";
 
     // prepare packet buf
     char* buf = malloc(2 * PACKET_SIZE_BYTES);

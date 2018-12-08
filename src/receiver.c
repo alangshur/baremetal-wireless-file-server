@@ -64,6 +64,33 @@ short receiver_get_short(void) {
     return result;
 }
 
+unsigned int receiver_get_packet(char** result_buf) {
+
+    // initialize packet read
+    char* buf = malloc(256);
+
+    // wakeup receiver
+    receiver_sleep_mode();
+    receiver_start();
+    receiver_get_packet_buf(buf);
+
+    // build packet
+    char* char_buf = receiver_build_packet(buf);
+    char* char_buf_ptr = char_buf;
+    free(buf);
+
+    for (int i = 0; i < PACKET_SIZE_BYTES; i++) {
+        if ((*char_buf_ptr == '~') && (*(char_buf_ptr + 1) == '~')) break;
+        char_buf_ptr++;
+    }
+
+    // null-terminate char_buf
+    *char_buf_ptr = 0;
+    
+    *result_buf = char_buf;
+    return receiver_calculate_checksum(char_buf);
+}
+
 void receiver_get_packet_buf(char* buf) {
     for (int i = 0; i < PACKET_SIZE_BITS; i++) {
         unsigned int start = timer_get_ticks();

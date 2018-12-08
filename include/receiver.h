@@ -15,7 +15,10 @@ char receiver_get_char(void);
 // get a single short from receiver
 short receiver_get_short(void);
 
-// get a single packet from receiver
+// reads a packet and returns checksum
+unsigned int receiver_get_packet(char** result_buf);
+
+// get a single packet buf from receiver
 void receiver_get_packet_buf(char* buf);
 
 // build the 32-bit packet
