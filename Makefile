@@ -30,6 +30,8 @@ install: $(CLIENT).bin
 
 server: $(SERVER).bin
 	cp server.bin ./server/kernel.img
+	rm /Volumes/SERVER\ SD/kernel.img
+	cp server.bin /Volumes/SERVER\ SD/kernel.img
 
 clean:
 	rm -f *.o *.bin *.elf *.list *~

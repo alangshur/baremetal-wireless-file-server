@@ -13,6 +13,12 @@ void transmitter_send_char(char c);
 // send a single short over transmitter
 void transmitter_send_short(short s);
 
+// send a packet (16-bits) over transmitter and return checksum
+unsigned int transmitter_send_packet(char* packet);
+
+// calculate transmission checksum
+unsigned int transmitter_calculate_checksum(char* char_buf);
+
 // wake up receiver
 void transmitter_exit_sleep_mode(void);
 

@@ -6,6 +6,9 @@
 // init receiver module
 void receiver_init(unsigned int baud_rate);
 
+// reset receiver and transmitter
+void receiver_reset(void);
+
 // get a single bit from receiver
 int receiver_get_bit(void);
 

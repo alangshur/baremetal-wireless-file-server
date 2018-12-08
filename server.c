@@ -11,21 +11,18 @@
 void main() {
     transmitter_init(2400);
     receiver_init(2400);
+    char* packet1 = "Alex Langshur";
+    char* packet2 = "Test test...";
+    char* packet3 = "Day!";
 
-    // this string has to be <= 16 bytes
-    char* packet = "Alex Langshur";
+    while(1) {  
 
-    // prepare packet buf
-    char* buf = malloc(2 * PACKET_SIZE_BYTES);
-    memcpy(buf, packet, strlen(packet));
-    memset((char*) (buf + strlen(packet)), '~', PACKET_SIZE_BYTES);
-
-    // wake up receiver
-    transmitter_exit_sleep_mode();
-    transmitter_start();
-
-    // transmit packet
-    for (int i = 0; i < PACKET_SIZE_BYTES; i++) {
-        transmitter_send_char(buf[i]); 
+        // this string has to be <= 16 bytes
+        transmitter_send_packet(packet1);
+        timer_delay(3);
+        transmitter_send_packet(packet2);
+        timer_delay(3);
+        transmitter_send_packet(packet3);
+        timer_delay(3);
     }
 }

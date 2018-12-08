@@ -9,6 +9,9 @@
 // define macro constants
 #define WAKE_UP_SIGNAL 0b10101010
 #define START_SIGNAL 0b11111111
+#define PACKET_SIZE_BYTES 32
+#define PACKET_CONTENT_BYTES 16
+#define PACKET_PADDING 8
 
 // define macros
 #define division_round_up(n, d) ((n + d - 1) / d)
@@ -56,6 +59,37 @@ void transmitter_send_short(short message) {
         // wait until bit delay time
         while((timer_get_ticks() - start) < bit_delay_us);
     }
+}
+
+unsigned int transmitter_send_packet(char* packet) {
+
+    // prepare packet buf
+    char* buf = malloc(PACKET_CONTENT_BYTES + PACKET_PADDING);
+    memcpy(buf, packet, strlen(packet));
+    memset(buf + strlen(packet), '~', PACKET_PADDING);
+
+    // wake up receiver
+    transmitter_exit_sleep_mode();
+    transmitter_start();
+
+    // transmit packet
+    for (int i = 0; i < PACKET_CONTENT_BYTES + PACKET_PADDING; i++)
+        transmitter_send_char(buf[i]); 
+
+    // deinit transmission
+    free(buf);
+    return transmitter_calculate_checksum(buf);
+}
+
+unsigned int transmitter_calculate_checksum(char* char_buf) {
+    unsigned int checksum = 0;
+
+    for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
+        if (*char_buf == '~') break;
+        checksum += char_buf[i];
+    }
+
+    return checksum;
 }
 
 void transmitter_exit_sleep_mode(void) {

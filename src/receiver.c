@@ -12,7 +12,7 @@
 #define START_SIGNAL 0b11111111
 #define PACKET_SIZE_BYTES 32
 #define BYTE_TO_BIT 8
-#define PACKET_SIZE_BITS 256
+#define PACKET_SIZE_BITS 128
 #define PACKET_PADDING 8
 #define PACKET_CONTENT_BYTES 16
 
@@ -22,9 +22,17 @@ static unsigned int bit_delay_us;
 void receiver_init(unsigned int baud_rate) {
     gpio_init();
     gpio_set_input(GPIO_PIN23);
+    gpio_set_output(GPIO_PIN21);
+    gpio_write(GPIO_PIN21, 1);
 
     // set delay for specified baud rate
     bit_delay_us = 1000000 / baud_rate;
+}
+
+void receiver_reset(void) {
+    gpio_write(GPIO_PIN21, 0);
+    timer_delay_ms(20);
+    gpio_write(GPIO_PIN21, 1);
 }
 
 int receiver_get_bit(void) {
@@ -67,20 +75,24 @@ short receiver_get_short(void) {
 unsigned int receiver_get_packet(char** result_buf) {
 
     // initialize packet read
-    char* buf = malloc(256);
+    char* buf = malloc(PACKET_SIZE_BITS * 2);
 
     // wakeup receiver
     receiver_sleep_mode();
     receiver_start();
     receiver_get_packet_buf(buf);
 
+    for (int i = 0; i < 128; i++) {
+        printf("%d", buf[i]);
+    }
+
     // build packet
     char* char_buf = receiver_build_packet(buf);
     char* char_buf_ptr = char_buf;
     free(buf);
 
-    for (int i = 0; i < PACKET_SIZE_BYTES; i++) {
-        if ((*char_buf_ptr == '~') && (*(char_buf_ptr + 1) == '~')) break;
+    for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
+        if (*char_buf_ptr == '~') break;
         char_buf_ptr++;
     }
 
@@ -100,14 +112,14 @@ void receiver_get_packet_buf(char* buf) {
 }
 
 char* receiver_build_packet(char* buf) {
-    char* char_buf = malloc(PACKET_SIZE_BYTES);
+    char* char_buf = malloc(PACKET_CONTENT_BYTES);
     char* char_buf_ptr = char_buf;
 
     // ignore SOH
-    while(*buf++ == 0);
+    buf += PACKET_PADDING;
 
     // read characters from packet
-    for (int i = 0; i < PACKET_SIZE_BYTES; i++) {
+    for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
         char temp = 0;
         for (int j = (BYTE_TO_BIT - 1); j >= 0; j--) temp |= (*buf++ << j);
         *char_buf_ptr++ = temp;
@@ -120,7 +132,7 @@ unsigned int receiver_calculate_checksum(char* char_buf) {
     unsigned int checksum = 0;
 
     for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
-        if ((*char_buf == '~') && (*(char_buf + 1) == '~')) break;
+        if (*char_buf == '~') break;
         checksum += char_buf[i];
     }
 
