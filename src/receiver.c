@@ -75,22 +75,29 @@ short receiver_get_short(void) {
     return result;
 }
 
-unsigned int receiver_get_block(char** buf_one, char** buf_two, 
-    char** buf_three, char** buf_four) {
+unsigned int receiver_get_block(char** block_buf) {
         
     // init block data
     char* result_buf[5];
+    char* block_buf_ptr = *block_buf;
     unsigned int receiver_checksum = 0;
 
     for (int i = 0; i < 4; i++) 
         receiver_checksum += receiver_get_packet(&(result_buf[i]));
     receiver_get_packet(&(result_buf[4]));
 
-    // store packets
-    *buf_one = result_buf[0];
-    *buf_two = result_buf[1];
-    *buf_three = result_buf[2];
-    *buf_four = result_buf[3];
+    // concatenate packets
+    char* buf_one = result_buf[0];
+    char* buf_two = result_buf[1];
+    char* buf_three = result_buf[2];
+    char* buf_four = result_buf[3];
+    while(*buf_one) *block_buf_ptr++ = *buf_one++;
+    while(*buf_two) *block_buf_ptr++ = *buf_two++;
+    while(*buf_three) *block_buf_ptr++ = *buf_three++;
+    while(*buf_four) *block_buf_ptr++ = *buf_four++;
+
+    // null-terminate block
+    *block_buf_ptr = 0;
 
     // return normalized checksum comparison
     return ((receiver_checksum % FLETCHER_CHECKSUM) == (result_buf[4])[0]);

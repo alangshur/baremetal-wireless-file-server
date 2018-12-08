@@ -79,6 +79,7 @@ void transmitter_send_block(char* block_buf) {
     unsigned int checksum = 0;
 
     // transmit four packets
+    timer_delay_ms(10);
     checksum += transmitter_send_packet(packet_one);
     timer_delay_ms(10);
     checksum += transmitter_send_packet(packet_two);
