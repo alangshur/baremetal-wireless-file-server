@@ -175,9 +175,6 @@ You should probably restart the Pi, since you interrupted it mid-load.
                     break
 
                 c = getc(1)
-                if c == b'\x04':   # End of transmission.
-                    printq("\nrpi-install.py: received EOT from Pi. Detaching.")
-                    break
                 if c is None: continue
                 last_comm = time.time()
 

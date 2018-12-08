@@ -14,15 +14,27 @@ void main() {
     char* packet1 = "Alex Langshur";
     char* packet2 = "Test test...";
     char* packet3 = "Day!";
+    char* packet4 = "Thug Waffle.";
+    char* packet5 = "Yo...";
+    char* packet6 = "Lactose Sugar.";
+    char* packet7 = "Help me!";
 
     while(1) {  
 
         // this string has to be <= 16 bytes
         transmitter_send_packet(packet1);
-        timer_delay(3);
+        timer_delay_ms(20);
         transmitter_send_packet(packet2);
-        timer_delay(3);
+        timer_delay_ms(20);
         transmitter_send_packet(packet3);
-        timer_delay(3);
+        timer_delay_ms(20);
+        transmitter_send_packet(packet4);
+        timer_delay_ms(20);
+        transmitter_send_packet(packet5);
+        timer_delay_ms(20);
+        transmitter_send_packet(packet6);
+        timer_delay_ms(20);
+        transmitter_send_packet(packet7);
+        timer_delay_ms(20);
     }
 }

@@ -11,11 +11,8 @@
 void main() {
     transmitter_init(2400);
     receiver_init(2400);
+    char* result_buf[30];
 
-    while(1) {
-        char* result_buf;
-        unsigned int checksum = receiver_get_packet(&result_buf);
-        printf("Received: %s\n", result_buf);
-        printf("Transmission Checksum: %d\n", checksum);
-    }
+    for (int i = 0; i < 30; i++) receiver_get_packet(&(result_buf[i]));
+    for (int i = 0; i < 30; i++) printf("Value: %s\n", result_buf[i]);
 }

@@ -82,10 +82,6 @@ unsigned int receiver_get_packet(char** result_buf) {
     receiver_start();
     receiver_get_packet_buf(buf);
 
-    for (int i = 0; i < 128; i++) {
-        printf("%d", buf[i]);
-    }
-
     // build packet
     char* char_buf = receiver_build_packet(buf);
     char* char_buf_ptr = char_buf;
@@ -107,7 +103,7 @@ void receiver_get_packet_buf(char* buf) {
     for (int i = 0; i < PACKET_SIZE_BITS; i++) {
         unsigned int start = timer_get_ticks();
         *buf++ = gpio_read(GPIO_PIN23);
-        while ((timer_get_ticks() - start) < 416);
+        while ((timer_get_ticks() - start) < bit_delay_us);
     }
 }
 
@@ -136,7 +132,7 @@ unsigned int receiver_calculate_checksum(char* char_buf) {
         checksum += char_buf[i];
     }
 
-    return checksum;
+    return checksum % 255;
 }
 
 void receiver_sleep_mode(void) {

@@ -89,7 +89,7 @@ unsigned int transmitter_calculate_checksum(char* char_buf) {
         checksum += char_buf[i];
     }
 
-    return checksum;
+    return checksum % 255;
 }
 
 void transmitter_exit_sleep_mode(void) {
