@@ -5,8 +5,7 @@
 #include "timer.h"
 #include "printf.h"
 #include "malloc.h"
-
-#define PACKET_SIZE_BYTES 32
+#include "filesys.h"
 
 void main() {
     transmitter_init(2400);

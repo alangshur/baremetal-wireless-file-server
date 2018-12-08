@@ -55,6 +55,12 @@ char* file_check_status(char* file_name) {
     else return "Error: file not found.";
 }
 
+int file_check_status_int(char* file_name) {
+    char* error_message = file_check_status(file_name);
+    if (strcmp(error_message, "Success: file found.")) return 0;
+    return 1;
+}
+
 unsigned int file_get_size(char* file_name) {
 
     // get file info
@@ -87,7 +93,13 @@ char* file_create(char* file_name, char* file_buf) {
     return "Success: file created.";
 }
 
-char* file_read_(char* file_name) {
+int file_create_int(char* file_name, char* file_buf) {
+    char* error_message = file_create(file_name, file_buf);
+    if (strcmp(error_message, "Success: file created.")) return 0;
+    return 1;
+}
+
+char* file_read_uncorrected(char* file_name) {
     
     // check if file exists
     if (!strcmp(file_check_status(file_name), "Error: file not found.")) 
@@ -101,7 +113,7 @@ char* file_read_(char* file_name) {
 }
 
 char* file_read(char* file_name) {
-    char* read_buf = file_read_(file_name);
+    char* read_buf = file_read_uncorrected(file_name);
     if (!strcmp(read_buf, "Error: file not found."))
         return "Error: file not found.";
     else if (!strcmp(read_buf, "Error: failed to read file."))
@@ -125,6 +137,12 @@ char* file_update(char* file_name, char* file_buf) {
     return "Success: file edited.";
 }
 
+int file_update_int(char* file_name, char* file_buf) {
+    char* error_message = file_update(file_name, file_buf);
+    if (strcmp(error_message, "Success: file edited.")) return 0;
+    return 1;
+}
+
 char* file_delete(char* file_name) {
 
     // check if file exists
@@ -138,4 +156,10 @@ char* file_delete(char* file_name) {
     // remove file from map
     map_remove(&file_name_map, file_name);
     return "Success: file removed.";
+}
+
+int file_delete_int(char* file_name) {
+    char* error_message = file_delete(file_name);
+    if (strcmp(error_message, "Success: file removed.")) return 0;
+    return 1;
 }
