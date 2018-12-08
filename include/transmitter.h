@@ -19,8 +19,14 @@ void transmitter_send_block(char* packet_64);
 // send a packet (16-bits) over transmitter and return checksum
 unsigned int transmitter_send_packet(char* packet);
 
+// sends a CRUD reply to client
+void transmitter_send_reply(char* reply_type);
+
 // calculate transmission checksum
 unsigned int transmitter_calculate_checksum(char* char_buf);
+
+// calculate transmission checksum for request char
+unsigned char transmitter_calculate_request_checksum(char request_code);
 
 // wake up receiver
 void transmitter_exit_sleep_mode(void);

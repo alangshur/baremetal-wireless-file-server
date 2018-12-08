@@ -19,10 +19,14 @@ char receiver_get_char(void);
 short receiver_get_short(void);
 
 // reads a 60-bit block and compare normalized checksums
-unsigned int receiver_get_block(char** block_buf);
+unsigned int receiver_get_block(char** buf_one, char** buf_two, 
+    char** buf_three, char** buf_four);
 
 // reads a packet and returns checksum
 unsigned int receiver_get_packet(char** result_buf);
+
+// reads a reply from server
+char* receiver_get_reply(void);
 
 // get a single packet buf from receiver
 void receiver_get_packet_buf(char* buf);

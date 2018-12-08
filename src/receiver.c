@@ -25,8 +25,6 @@ static unsigned int bit_delay_us;
 void receiver_init(unsigned int baud_rate) {
     gpio_init();
     gpio_set_input(GPIO_PIN23);
-    gpio_set_output(GPIO_PIN21);
-    gpio_write(GPIO_PIN21, 1);
 
     // set delay for specified baud rate
     bit_delay_us = 1000000 / baud_rate;
@@ -75,29 +73,22 @@ short receiver_get_short(void) {
     return result;
 }
 
-unsigned int receiver_get_block(char** block_buf) {
+unsigned int receiver_get_block(char** buf_one, char** buf_two, 
+    char** buf_three, char** buf_four) {
         
     // init block data
     char* result_buf[5];
-    char* block_buf_ptr = *block_buf;
     unsigned int receiver_checksum = 0;
 
     for (int i = 0; i < 4; i++) 
         receiver_checksum += receiver_get_packet(&(result_buf[i]));
     receiver_get_packet(&(result_buf[4]));
 
-    // concatenate packets
-    char* buf_one = result_buf[0];
-    char* buf_two = result_buf[1];
-    char* buf_three = result_buf[2];
-    char* buf_four = result_buf[3];
-    while(*buf_one) *block_buf_ptr++ = *buf_one++;
-    while(*buf_two) *block_buf_ptr++ = *buf_two++;
-    while(*buf_three) *block_buf_ptr++ = *buf_three++;
-    while(*buf_four) *block_buf_ptr++ = *buf_four++;
-
-    // null-terminate block
-    *block_buf_ptr = 0;
+    // store packets
+    *buf_one = result_buf[0];
+    *buf_two = result_buf[1];
+    *buf_three = result_buf[2];
+    *buf_four = result_buf[3];
 
     // return normalized checksum comparison
     return ((receiver_checksum % FLETCHER_CHECKSUM) == (result_buf[4])[0]);
@@ -129,6 +120,19 @@ unsigned int receiver_get_packet(char** result_buf) {
     
     *result_buf = char_buf;
     return checksum;
+}
+
+char* receiver_get_reply(void) {
+
+    // get reply packet
+    char* result_buf;
+    receiver_get_packet(&result_buf);
+
+    // check reply code bits
+    if ((result_buf[0] == 'A') && (result_buf[1] == 'A')) return "ACK";
+    else if ((result_buf[0] == 'N') && (result_buf[1] == 'N')) return "NAK";
+    else if ((result_buf[0] == 'E') && (result_buf[1] == 'E')) return "ERR";
+    return 0;
 }
 
 void receiver_get_packet_buf(char* buf) {

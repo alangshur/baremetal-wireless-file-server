@@ -13,12 +13,25 @@
 #define PACKET_CONTENT_BYTES 16
 #define PACKET_PADDING 8
 #define FLETCHER_CHECKSUM 255
+#define ACK "AAAAAAAAAAAAAAAA"
+#define NAK "NNNNNNNNNNNNNNNN"
+#define ERR "EEEEEEEEEEEEEEEE"
 
 // define macros
 #define division_round_up(n, d) ((n + d - 1) / d)
 
 // define static variables
 static unsigned int bit_delay_us;
+
+// count set bits of char
+unsigned int count_set_bits(char c)  { 
+    unsigned int count = 0; 
+    while(c) { 
+        count += (c & 1); 
+        c >>= 1; 
+    } 
+    return count; 
+} 
 
 void transmitter_init(unsigned int baud_rate) {
     gpio_init();
@@ -79,7 +92,6 @@ void transmitter_send_block(char* block_buf) {
     unsigned int checksum = 0;
 
     // transmit four packets
-    timer_delay_ms(10);
     checksum += transmitter_send_packet(packet_one);
     timer_delay_ms(10);
     checksum += transmitter_send_packet(packet_two);
@@ -122,6 +134,28 @@ unsigned int transmitter_send_packet(char* packet) {
     return transmitter_calculate_checksum(buf);
 }
 
+void transmitter_send_reply(char* reply_type) {
+    char* reply_code = 0;
+    unsigned int count = PACKET_CONTENT_BYTES / 2;
+
+    // prepare packet buf
+    if (!strcmp(reply_type, "ACK")) reply_code = ACK;
+    else if (!strcmp(reply_type, "NAK")) reply_code = NAK;
+    else if (!strcmp(reply_type, "ERR")) reply_code = ERR;
+
+    // calculate checksum
+    unsigned int checksum = transmitter_calculate_checksum(reply_code);
+    char fletcher_checksum = (unsigned char) (checksum % FLETCHER_CHECKSUM);
+
+    // wake up receiver
+    transmitter_exit_sleep_mode();
+    transmitter_start();
+
+    // transmit reply code bits and checksum bits
+    for (int i = 0; i < count; i++) transmitter_send_char(reply_code[i]); 
+    for (int i = 0; i < count; i++) transmitter_send_char(fletcher_checksum); 
+}
+
 unsigned int transmitter_calculate_checksum(char* char_buf) {
     unsigned int checksum = 0;
 
@@ -131,6 +165,10 @@ unsigned int transmitter_calculate_checksum(char* char_buf) {
     }
 
     return checksum;
+}
+
+unsigned char transmitter_calculate_request_checksum(char request_code) {
+    return count_set_bits(request_code) % FLETCHER_CHECKSUM;
 }
 
 void transmitter_exit_sleep_mode(void) {
