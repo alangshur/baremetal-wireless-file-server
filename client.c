@@ -10,6 +10,7 @@
 void main() {
     transmitter_init(2400);
     receiver_init(2400);
+    
 
     char* result_buf = malloc(64);
     printf("Checksum Flag: %d\n", receiver_get_block(&result_buf));
