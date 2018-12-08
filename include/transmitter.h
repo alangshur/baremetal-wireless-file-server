@@ -13,6 +13,9 @@ void transmitter_send_char(char c);
 // send a single short over transmitter
 void transmitter_send_short(short s);
 
+// send a single 60-bit block over transmitter
+void transmitter_send_block(char* packet_64);
+
 // send a packet (16-bits) over transmitter and return checksum
 unsigned int transmitter_send_packet(char* packet);
 

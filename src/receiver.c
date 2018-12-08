@@ -15,6 +15,9 @@
 #define PACKET_SIZE_BITS 128
 #define PACKET_PADDING 8
 #define PACKET_CONTENT_BYTES 16
+#define PACKETS_PER_BLOCK 4
+#define CHECKSUM_INDEX 4
+#define FLETCHER_CHECKSUM 255
 
 // define static variables
 static unsigned int bit_delay_us;
@@ -72,6 +75,27 @@ short receiver_get_short(void) {
     return result;
 }
 
+unsigned int receiver_get_block(char** buf_one, char** buf_two, 
+    char** buf_three, char** buf_four) {
+        
+    // init block data
+    char* result_buf[5];
+    unsigned int receiver_checksum = 0;
+
+    for (int i = 0; i < 4; i++) 
+        receiver_checksum += receiver_get_packet(&(result_buf[i]));
+    receiver_get_packet(&(result_buf[4]));
+
+    // store packets
+    *buf_one = result_buf[0];
+    *buf_two = result_buf[1];
+    *buf_three = result_buf[2];
+    *buf_four = result_buf[3];
+
+    // return normalized checksum comparison
+    return ((receiver_checksum % FLETCHER_CHECKSUM) == (result_buf[4])[0]);
+}
+
 unsigned int receiver_get_packet(char** result_buf) {
 
     // initialize packet read
@@ -87,6 +111,7 @@ unsigned int receiver_get_packet(char** result_buf) {
     char* char_buf_ptr = char_buf;
     free(buf);
 
+    unsigned int checksum = receiver_calculate_checksum(char_buf);
     for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
         if (*char_buf_ptr == '~') break;
         char_buf_ptr++;
@@ -96,7 +121,7 @@ unsigned int receiver_get_packet(char** result_buf) {
     *char_buf_ptr = 0;
     
     *result_buf = char_buf;
-    return receiver_calculate_checksum(char_buf);
+    return checksum;
 }
 
 void receiver_get_packet_buf(char* buf) {
@@ -128,11 +153,11 @@ unsigned int receiver_calculate_checksum(char* char_buf) {
     unsigned int checksum = 0;
 
     for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
-        if (*char_buf == '~') break;
-        checksum += char_buf[i];
+        if (char_buf[i] == '~') break;
+        else checksum += char_buf[i];
     }
 
-    return checksum % 255;
+    return checksum;
 }
 
 void receiver_sleep_mode(void) {

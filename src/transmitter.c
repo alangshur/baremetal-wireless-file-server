@@ -12,6 +12,7 @@
 #define PACKET_SIZE_BYTES 32
 #define PACKET_CONTENT_BYTES 16
 #define PACKET_PADDING 8
+#define FLETCHER_CHECKSUM 255
 
 // define macros
 #define division_round_up(n, d) ((n + d - 1) / d)
@@ -61,6 +62,46 @@ void transmitter_send_short(short message) {
     }
 }
 
+void transmitter_send_block(char* block_buf) {
+
+    // init transmit data
+    char* packet_one = malloc(PACKET_CONTENT_BYTES - 1);
+    memcpy(packet_one, block_buf, PACKET_CONTENT_BYTES - 1);
+    block_buf += PACKET_CONTENT_BYTES - 1;
+    char* packet_two = malloc(PACKET_CONTENT_BYTES - 1);
+    memcpy(packet_two, block_buf, PACKET_CONTENT_BYTES - 1);
+    block_buf += PACKET_CONTENT_BYTES - 1;
+    char* packet_three = malloc(PACKET_CONTENT_BYTES - 1);
+    memcpy(packet_three, block_buf, PACKET_CONTENT_BYTES - 1);
+    block_buf += PACKET_CONTENT_BYTES - 1;
+    char* packet_four = malloc(PACKET_CONTENT_BYTES - 1);
+    memcpy(packet_four, block_buf, PACKET_CONTENT_BYTES - 1);
+    unsigned int checksum = 0;
+
+    // transmit four packets
+    checksum += transmitter_send_packet(packet_one);
+    timer_delay_ms(10);
+    checksum += transmitter_send_packet(packet_two);
+    timer_delay_ms(10);
+    checksum += transmitter_send_packet(packet_three);
+    timer_delay_ms(10);
+    checksum += transmitter_send_packet(packet_four);
+    timer_delay_ms(10);
+
+    // calculate and send checksum
+    char packet_five[2];
+    packet_five[0] = (checksum % FLETCHER_CHECKSUM);
+    packet_five[1] = 0;
+    char* packet_five_ptr = packet_five;
+    transmitter_send_packet(packet_five_ptr);
+
+    // free packets
+    free(packet_one);
+    free(packet_two);
+    free(packet_three);
+    free(packet_four);
+}
+
 unsigned int transmitter_send_packet(char* packet) {
 
     // prepare packet buf
@@ -73,11 +114,10 @@ unsigned int transmitter_send_packet(char* packet) {
     transmitter_start();
 
     // transmit packet
-    for (int i = 0; i < PACKET_CONTENT_BYTES + PACKET_PADDING; i++)
+    for (int i = 0; i < PACKET_CONTENT_BYTES; i++)
         transmitter_send_char(buf[i]); 
 
     // deinit transmission
-    free(buf);
     return transmitter_calculate_checksum(buf);
 }
 
@@ -85,11 +125,11 @@ unsigned int transmitter_calculate_checksum(char* char_buf) {
     unsigned int checksum = 0;
 
     for (int i = 0; i < PACKET_CONTENT_BYTES; i++) {
-        if (*char_buf == '~') break;
-        checksum += char_buf[i];
+        if (char_buf[i] == '~') break;
+        else checksum += char_buf[i];
     }
 
-    return checksum % 255;
+    return checksum;
 }
 
 void transmitter_exit_sleep_mode(void) {

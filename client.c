@@ -11,8 +11,12 @@
 void main() {
     transmitter_init(2400);
     receiver_init(2400);
-    char* result_buf[30];
 
-    for (int i = 0; i < 30; i++) receiver_get_packet(&(result_buf[i]));
-    for (int i = 0; i < 30; i++) printf("Value: %s\n", result_buf[i]);
+    char* result_buf[4];
+    printf("Checksum Flag: %d\n", receiver_get_block(&(result_buf[0]), &(result_buf[1]),
+        &(result_buf[2]), &(result_buf[3])));
+
+    for (int i = 0; i < 4; i++) {
+        printf("Packet %d: %s\n", i + 1, result_buf[i]);
+    }
 }
