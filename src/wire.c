@@ -10,6 +10,7 @@
 #define WAKEUP_SIGNAL 0b11111111
 #define PACKET_SIZE_BYTES 32
 #define FLETCHER_CHECKSUM 255
+#define EOT "~~~~~~~~~~"
 
 // define macros
 #define division_round_up(n, d) ((n + d - 1) / d)
@@ -18,6 +19,21 @@
 static unsigned int bit_delay_us;
 static unsigned int gpio_pin_in;
 static unsigned int gpio_pin_out;
+
+// concatenate pair of strings
+static char* str_concat(char* s1, const char* s2) {
+    char* str = malloc(strlen(s1) + strlen(s2) + 1);
+    char* str_ptr = str;
+
+    // copy s2 to end of s1
+    memcpy(str, s1, strlen(s1));
+    str_ptr += strlen(s1);
+    memcpy(str_ptr, s2, strlen(s2));
+    str_ptr += strlen(s2);
+    *str_ptr = 0;
+
+    return str;
+}
 
 void wire_init(unsigned int baud_rate, char* pi_code) {
 
@@ -130,4 +146,54 @@ void wire_wake_up(void) {
     // send wakeup signal four times
     for (int i = 0; i < 4; i++)
         wire_write_char(WAKEUP_SIGNAL);
+}
+
+void wire_write_file(char* file_str) {
+    unsigned int checksum = 0;
+    unsigned int iterations = division_round_up(strlen(file_str), PACKET_SIZE_BYTES);
+    char* file = malloc(PACKET_SIZE_BYTES * iterations);
+    memcpy(file, file_str, strlen(file_str));
+    file[strlen(file_str)] = 0;
+
+    // run handshake for each iteration
+    for (int i = 0; i < iterations; i++) {
+        char* iter_str = malloc(PACKET_SIZE_BYTES);
+        memcpy(iter_str, file + (i * PACKET_SIZE_BYTES), PACKET_SIZE_BYTES);
+        write_again: wire_write_str(iter_str);
+        if (!strcmp(wire_read_str(&checksum), "NAK")) {
+            timer_delay_ms(50);
+            goto write_again;
+        }
+        timer_delay_ms(50);
+        free(iter_str);
+    }
+
+    // end transmission
+    timer_delay_ms(100);
+    wire_write_str(EOT);
+    free(file);
+}
+
+char* wire_read_file(void) {
+    char* file_str = "";
+    char* read_str = "";
+
+    while(read_str[0] != '~') {
+        unsigned int checksum = 0;
+        read_again: read_str = wire_read_str(&checksum);
+        timer_delay_ms(50);
+        if (checksum) wire_write_str("ACK");
+        else {
+            wire_write_str("NAK");
+            goto read_again;
+        }
+        if ((file_str[0] == '~') || (file_str[1] == '~')) break;
+        file_str = str_concat(file_str, read_str);
+    }
+
+    char* file_str_ptr = file_str;
+    while(*file_str_ptr != '~') file_str_ptr++;
+    *file_str_ptr = 0;
+    
+    return file_str;
 }

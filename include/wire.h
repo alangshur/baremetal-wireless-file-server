@@ -28,4 +28,10 @@ void wire_sleep(void);
 // wake up wired connection
 void wire_wake_up(void);
 
+// transmit file
+void wire_write_file(char* file_str);
+
+// read file
+char* wire_read_file(void);
+
 #endif
