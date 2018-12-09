@@ -1,12 +1,10 @@
-#include "receiver.h"
-#include "transmitter.h"
+#include "wire.h"
+#include "timer.h"
 #include "printf.h"
 
 void main() {
-    transmitter_init(2400);
-    receiver_init(2400);
-
-    while(1) {
-        printf("Reply: %s", receiver_get_reply());
-    }
+    wire_init(2400, "client");
+    unsigned int checksum = 0;
+    printf("String: %s\n", wire_read_str(&checksum));
+    printf("Checksum: %d", checksum);
 }

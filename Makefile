@@ -1,6 +1,6 @@
 CLIENT = client
 SERVER = server
-MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o src/wired.o
+MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o src/wire.o
 
 CFLAGS = -I./include -g -Wall -Wpointer-arith
 CFLAGS += -O1 -std=c99 -ffreestanding
