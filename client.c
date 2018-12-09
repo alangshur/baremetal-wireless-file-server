@@ -2,7 +2,6 @@
 #include "printf.h"
 #include "pi.h"
 #include "strings.h"
-#include "compress.h"
 
 void main() {
 
