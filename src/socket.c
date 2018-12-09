@@ -19,12 +19,12 @@ void socket_init(unsigned int baud_rate, char* pi_code) {
     filesys_init();
 }
 
-int socket_main_client(unsigned int program_number, char* file_name, char* data) {
+int socket_main_client(unsigned int program_number, char* file_name, char* data, char** file) {
 
     // select correct client program
     switch(program_number) {
         case 1: return socket_create_prog_client(file_name, data);
-        case 2: return socket_read_prog_client(file_name);
+        case 2: return socket_read_prog_client(file_name, file);
         case 3: return socket_update_prog_client(file_name, data);
         case 4: return socket_delete_prog_client(file_name);
     }
@@ -63,7 +63,8 @@ int socket_create_prog_client(char* filename, char* data) {
     if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
 
     // send data
-    skip_handshake_two: timer_delay_ms(150);
+    skip_handshake_two: 
+    timer_delay_ms(150);
     wire_write_file(data);
     
     return 1;
@@ -94,17 +95,161 @@ void socket_create_prog_server(void) {
 
     // get data and store under filename
     char* data = wire_read_file();
-    return file_create_int(filename, data);
+    file_create_int(filename, data);
 }
 
-int socket_read_prog_client(char* filename) { return 0; }
+int socket_read_prog_client(char* filename, char** file) {
+    unsigned int checksum = 0;
 
-void socket_read_prog_server(void) {}
+    // write program assert string and wait for reply
+    wire_write_str(CRUD_READ);
+    char* reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_one;
+    char* reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
 
-int socket_update_prog_client(char* filename, char* data) { return 0; }
+    // send filename
+    skip_handshake_one: timer_delay_ms(150);
+    wire_write_str(filename);
+    reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_two;
+    reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
 
-void socket_update_prog_server(void) {}
+    // send data
+    skip_handshake_two: ;
+    char* data = wire_read_file();
+    *file = data;
+    return 1;
+}
 
-int socket_delete_prog_client(char* filename) { return 0; }
+void socket_read_prog_server(void) {
+    unsigned int checksum = 0;
 
-void socket_delete_prog_server(void) {}
+    // transmit reply
+    timer_delay_ms(50);
+    wire_write_str("ACK");
+    timer_delay_ms(50);
+    transmitter_send_reply("ACK");
+
+    // get filename
+    char* filename = wire_read_str(&checksum);
+    timer_delay_ms(50);
+    if (checksum) {
+        wire_write_str("ACK");
+        timer_delay_ms(50);
+        transmitter_send_reply("ACK");
+    }
+    else {
+        wire_write_str("NAK");
+        timer_delay_ms(50);
+        transmitter_send_reply("NAK");
+    }
+
+    // get file and send to client
+    timer_delay_ms(150);
+    char* data = file_read(filename);
+    wire_write_file(data);
+}
+
+int socket_update_prog_client(char* filename, char* data) {
+    unsigned int checksum = 0;
+
+    // write program assert string and wait for reply
+    wire_write_str(CRUD_UPDATE);
+    char* reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_one;
+    char* reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
+
+    // send filename
+    skip_handshake_one: timer_delay_ms(150);
+    wire_write_str(filename);
+    reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_two;
+    reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
+
+    // send data
+    skip_handshake_two: timer_delay_ms(150);
+    wire_write_file(data);
+    
+    return 1;
+}
+
+void socket_update_prog_server(void) {
+    unsigned int checksum = 0;
+
+    // transmit reply
+    timer_delay_ms(50);
+    wire_write_str("ACK");
+    timer_delay_ms(50);
+    transmitter_send_reply("ACK");
+
+    // get filename
+    char* filename = wire_read_str(&checksum);
+    timer_delay_ms(50);
+    if (checksum) {
+        wire_write_str("ACK");
+        timer_delay_ms(50);
+        transmitter_send_reply("ACK");
+    }
+    else {
+        wire_write_str("NAK");
+        timer_delay_ms(50);
+        transmitter_send_reply("NAK");
+    }
+
+    // get data and store under filename
+    char* data = wire_read_file();
+    file_update_int(filename, data);
+}
+
+int socket_delete_prog_client(char* filename) {
+    unsigned int checksum = 0;
+
+    // write program assert string and wait for reply
+    wire_write_str(CRUD_DELETE);
+    char* reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_one;
+    char* reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
+
+    // send filename
+    skip_handshake_one: timer_delay_ms(150);
+    wire_write_str(filename);
+    reply_wired = wire_read_str(&checksum);
+    if (!strcmp(reply_wired, "ACK")) goto skip_handshake_two;
+    reply_wireless = receiver_get_reply();
+    if (strcmp(reply_wireless, "ACK") && strcmp(reply_wired, "ACK")) return 0;
+
+    skip_handshake_two:
+    return 1;
+}
+
+void socket_delete_prog_server(void) {
+    unsigned int checksum = 0;
+
+    // transmit reply
+    timer_delay_ms(50);
+    wire_write_str("ACK");
+    timer_delay_ms(50);
+    transmitter_send_reply("ACK");
+
+    // get filename
+    char* filename = wire_read_str(&checksum);
+    timer_delay_ms(50);
+    if (checksum) {
+        wire_write_str("ACK");
+        timer_delay_ms(50);
+        transmitter_send_reply("ACK");
+    }
+    else {
+        wire_write_str("NAK");
+        timer_delay_ms(50);
+        transmitter_send_reply("NAK");
+    }
+
+    // delete file with filename
+    file_delete_int(filename);
+}
