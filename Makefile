@@ -45,9 +45,9 @@ clean:
 	rm -f ./server/kernel.img
 
 transmit:
-	@ make clean
-	@ make PROG_ARG="$(Command)" FN_ARG="$(Filename)" DAT_ARG="$(Content)"
-	@ make install
+	@ make --silent clean
+	@ make --silent PROG_ARG="$(Command)" FN_ARG="$(Filename)" DAT_ARG="$(Content)"
+	@ make --silent install
 
 .PHONY: all clean install
 
