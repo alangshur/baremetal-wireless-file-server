@@ -3,7 +3,7 @@
 * Project title: *Wireless File Server*
 * Team members: *Alex Langshur*
 * Main Features (files in /src/):
-  - **Note:** For the most part, every single module/component below was entirely self-inspired and built in-house. The map module below was modeled after that of an open-source third party and I was inspired by various articles on checksum and data packeting on how to implement my own wireless and wired communcation protocols.
+  - **Note:** For the most part, every single module/component below was entirely self-inspired and built in-house. The only significant exception to this is that the map module below was modeled after that of an open-source third party.
   - *storage.c*: This module is a low-level wrapper to the "ff.h" module. It automates a variety of complex tasks such as rapidly reading, writing, updating, and deleting files, as well as safely managing the base structure of the SD-based File Allocation Table platform. 
   - *filesys.c*: This module is an interface for the above storage module. It automates a set of even more complex tasks, allows for comprehensive error-checking, and provides a clean interface to the server file system.
   - *map.c*: This module was inspired by the RXI type-safe hash map (MIT license). I built-up the underlining hash map features around the node-based RXI model and added some additional key features for a more powerful map data structure. 
