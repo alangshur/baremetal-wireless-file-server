@@ -6,13 +6,6 @@
 
 void main() {
 
-    char* f = "AABBBBBBBAAADczxczzqwwwwww";
-    printf("File before: %s\n", f);
-    char* ff = compress_file(f);
-    printf("File after: %s\n", ff);
-    printf("File after decompression: %s", decompress_file(ff));
-    while(1);
-
     // setup command-line vars with Makefile directives
     char* prog = PROG_ARG;
     char* filename = FN_ARG;
