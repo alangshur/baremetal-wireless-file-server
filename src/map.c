@@ -75,9 +75,9 @@ static int map_resize(map_base_t* m, int nbuckets) {
     }
 
     if (m->buckets) {
-        memset(m->buckets, 0, sizeof(*m->buckets) * m->nbuckets);
-        
+
         // re-add nodes to bucket
+        memset(m->buckets, 0, sizeof(*m->buckets) * m->nbuckets);
         node = nodes;
         while (node) {
             next = node->next;
@@ -99,10 +99,7 @@ static map_node_t** map_getref(map_base_t* m, const char* key) {
     if (m->nbuckets > 0) {
         next = &m->buckets[map_bucketidx(m, hash)];
         while (*next) {
-            if ((*next)->hash == hash && !strcmp((char*) (*next + 1), key)) {
-                return next;
-            }
-
+            if ((*next)->hash == hash && !strcmp((char*) (*next + 1), key)) return next;
             next = &(*next)->next;
         }
     }
@@ -189,12 +186,12 @@ const char *map_next_(map_base_t* m, map_iter_t* iter) {
         iter->node = iter->node->next;
         if (iter->node == NULL) goto nextBucket;
     } 
+
+    // move to next bucket
     else {
         nextBucket:
         do {
-            if (++iter->bucketidx >= m->nbuckets) {
-                return NULL;
-            }
+            if (++iter->bucketidx >= m->nbuckets) return NULL;
             iter->node = m->buckets[iter->bucketidx];
         } 
         while (iter->node == NULL);

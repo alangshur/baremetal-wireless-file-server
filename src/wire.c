@@ -178,6 +178,7 @@ char* wire_read_file(void) {
     char* file_str = "";
     char* read_str = "";
 
+    // read file until EOT
     while(read_str[0] != '~') {
         unsigned int checksum = 0;
         read_again: read_str = wire_read_str(&checksum);

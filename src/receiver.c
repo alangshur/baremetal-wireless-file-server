@@ -172,8 +172,9 @@ unsigned int receiver_calculate_checksum(char* char_buf) {
 }
 
 void receiver_sleep_mode(void) {
-
     unsigned int res = 0;
+
+    // wait for wakeup signal
     while(1) {
         int start = timer_get_ticks();
         

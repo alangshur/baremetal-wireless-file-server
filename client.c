@@ -1,8 +1,9 @@
-#include "wire.h"
-#include "timer.h"
+#include "socket.h"
 #include "printf.h"
 
 void main() {
-    wire_init(2400, "client");
-    printf("String: %s\n", wire_read_file());
+    socket_init(2400, "client");
+    int res = socket_main_client(1, "langshur.txt", "Hello, world?");
+    if (res) printf("worked...");
+    else printf("nope...");
 }
