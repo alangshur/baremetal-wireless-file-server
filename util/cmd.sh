@@ -1,1 +1,0 @@
-# program bash commands

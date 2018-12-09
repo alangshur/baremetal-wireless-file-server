@@ -5,7 +5,7 @@
 void socket_init(unsigned int baud_rate, char* pi_code);
 
 // main program for client
-int socket_main_client(unsigned int program_number, char* file_name, char* data, char**file);
+int socket_main_client(char* program, char* file_name, char* data, char**file);
 
 // main program for server
 void socket_main_server(void);

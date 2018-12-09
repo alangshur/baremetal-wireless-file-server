@@ -5,6 +5,7 @@
 #include "filesys.h"
 #include "strings.h"
 #include "printf.h"
+#include "compress.h"
 #include "timer.h"
 
 #define CRUD_CREATE "CRUDCREATE"
@@ -17,14 +18,28 @@ void socket_init(unsigned int baud_rate, char* pi_code) {
     receiver_init(baud_rate);
     transmitter_init(baud_rate);
     filesys_init();
+    compress_init();
 }
 
-int socket_main_client(unsigned int program_number, char* file_name, char* data, char** file) {
+int socket_main_client(char* program, char* file_name, char* data, char** file) {
+    unsigned int prog_num = 0;
+
+    // convert program to num
+    if (!strcmp(program, "Create")) prog_num = 1;
+    else if (!strcmp(program, "Read")) prog_num = 2;
+    else if (!strcmp(program, "Update")) prog_num = 3;
+    else if (!strcmp(program, "Delete")) prog_num = 4;
+
+    // compress file contents
+    if ((prog_num == 1) || (prog_num == 3)) compress_file(*file);
 
     // select correct client program
-    switch(program_number) {
+    switch(prog_num) {
         case 1: return socket_create_prog_client(file_name, data);
-        case 2: return socket_read_prog_client(file_name, file);
+        case 2:;
+            unsigned int res = socket_read_prog_client(file_name, file);
+            decompress_file(*file);
+            return res;
         case 3: return socket_update_prog_client(file_name, data);
         case 4: return socket_delete_prog_client(file_name);
     }

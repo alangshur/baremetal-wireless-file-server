@@ -1,14 +1,12 @@
 CLIENT = client
 SERVER = server
-MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o src/wire.o src/socket.o
+MODULES = src/map.o src/storage.o src/filesys.o src/transmitter.o src/receiver.o src/wire.o src/socket.o src/compress.o
 
 CFLAGS = -I./include -g -Wall -Wpointer-arith
 CFLAGS += -O1 -std=c99 -ffreestanding
 CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name
 LDFLAGS = -nostdlib -T memmap -L. -L./src -L./lib
 LDLIBS  = -lpisd -lpiextra -lpi -lgcc
-
-# make PROG_ARG="2" FN_ARG="Alex" DAT_ARG="Langshur" --> make client.c
 
 all: $(CLIENT).bin $(MODULES)
 
@@ -22,7 +20,7 @@ $(CLIENT).elf: $(CLIENT).o $(MODULES) start.o cstart.o
 	arm-none-eabi-gcc $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(CLIENT).o: $(CLIENT).c
-	arm-none-eabi-gcc -DPROG_ARG='$(PROG_ARG)' -DFN_ARG='"$(FN_ARG)"' -DDAT_ARG='"$(DAT_ARG)"' $(CFLAGS) -c $< -o $@
+	arm-none-eabi-gcc -DPROG_ARG='"$(PROG_ARG)"' -DFN_ARG='"$(FN_ARG)"' -DDAT_ARG='"$(DAT_ARG)"' $(CFLAGS) -c $< -o $@
 
 %.o: %.c
 	arm-none-eabi-gcc $(CFLAGS) -c $< -o $@
@@ -45,6 +43,11 @@ clean:
 	rm -f *.o *.bin *.elf *.list *~
 	rm -f src/*.o
 	rm -f ./server/kernel.img
+
+transmit:
+	@ make clean
+	@ make PROG_ARG="$(Command)" FN_ARG="$(Filename)" DAT_ARG="$(Content)"
+	@ make install
 
 .PHONY: all clean install
 

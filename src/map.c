@@ -21,17 +21,17 @@ static unsigned map_hash(const char* str) {
 // create new map node
 static map_node_t* map_newnode(const char* key, void* value, int vsize) {
     map_node_t* node;
-    int ksize = strlen(key) + 1;
-    int voffset = ksize + ((sizeof(void*) - ksize) % sizeof(void*));
+    int size = strlen(key) + 1;
+    int offset = size + ((sizeof(void*) - size) % sizeof(void*));
 
     // attempt to allocate node
-    node = malloc(sizeof(*node) + voffset + vsize);
+    node = malloc(sizeof(*node) + offset + vsize);
     if (!node) return NULL;
 
     // fill in node
-    memcpy(node + 1, key, ksize);
+    memcpy(node + 1, key, size);
     node->hash = map_hash(key);
-    node->value = ((char*) (node + 1)) + voffset;
+    node->value = ((char*) (node + 1)) + offset;
     memcpy(node->value, value, vsize);
     return node;
 }
