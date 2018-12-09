@@ -8,13 +8,21 @@ CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name
 LDFLAGS = -nostdlib -T memmap -L. -L./src -L./lib
 LDLIBS  = -lpisd -lpiextra -lpi -lgcc
 
+# make PROG_ARG="2" FN_ARG="Alex" DAT_ARG="Langshur" --> make client.c
+
 all: $(CLIENT).bin $(MODULES)
 
 %.bin: %.elf
 	arm-none-eabi-objcopy $< -O binary $@
-	
-%.elf: %.o $(MODULES) start.o cstart.o
+
+$(SERVER).elf: $(SERVER).o $(MODULES) start.o cstart.o
 	arm-none-eabi-gcc $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(CLIENT).elf: $(CLIENT).o $(MODULES) start.o cstart.o
+	arm-none-eabi-gcc $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(CLIENT).o: $(CLIENT).c
+	arm-none-eabi-gcc -DPROG_ARG='$(PROG_ARG)' -DFN_ARG='"$(FN_ARG)"' -DDAT_ARG='"$(DAT_ARG)"' $(CFLAGS) -c $< -o $@
 
 %.o: %.c
 	arm-none-eabi-gcc $(CFLAGS) -c $< -o $@

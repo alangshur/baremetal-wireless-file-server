@@ -5,7 +5,6 @@
 #include "strings.h"
 #include "printf.h"
 #include "malloc.h"
-#include "gpioextra.h"
 
 // define macro constants
 #define WAKE_UP_SIGNAL 0xAAAAAAAA
