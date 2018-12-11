@@ -42,7 +42,6 @@ server: $(SERVER).bin
 clean:
 	rm -f *.o *.bin *.elf *.list *~
 	rm -f src/*.o
-	rm -f ./server/kernel.img
 
 transmit:
 	@ make --silent clean
